@@ -68,3 +68,7 @@ type Quote struct {
 	Volume []int     `json:"volume"`
 	Low    []float64 `json:"low"`
 }
+
+func (c *Chart) Price() float64 {
+	return c.Chart.Result[0].Meta.RegularMarketPrice
+}

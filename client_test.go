@@ -28,7 +28,7 @@ func TestYahooAPIRealCall(t *testing.T) {
 	if result.Meta.Symbol != ticker {
 		t.Errorf("Expected symbol '%s', got '%s'", ticker, result.Meta.Symbol)
 	}
-	if result.Meta.RegularMarketPrice <= 0 {
+	if chart.Price() <= 0 {
 		t.Errorf("Expected positive regularMarketPrice, got %.2f", result.Meta.RegularMarketPrice)
 	}
 	if result.Meta.LongName == "" {
@@ -40,6 +40,6 @@ func TestYahooAPIRealCall(t *testing.T) {
 
 	// informational
 	fmt.Printf("Ticker: %s\n", result.Meta.Symbol)
-	fmt.Printf("Market Price: %.2f\n", result.Meta.RegularMarketPrice)
+	fmt.Printf("Market Price: %.2f\n", chart.Price())
 	fmt.Printf("Trading Period: %+v\n", result.Meta.CurrentTradingPeriod)
 }
