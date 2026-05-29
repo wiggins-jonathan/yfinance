@@ -23,7 +23,7 @@ func NewClient(opts ...ClientOpt) *client {
 	client := &client{ // default Client implementation
 		BaseURL:    `https://query1.finance.yahoo.com`,
 		HTTPClient: &http.Client{Timeout: 30 * time.Second},
-		Headers:    make(map[string]string),
+		Headers:    map[string]string{"User-Agent": randomUserAgent()},
 	}
 
 	for _, opt := range opts { //override defaults
@@ -54,6 +54,27 @@ func WithHeaders(headers map[string]string) ClientOpt {
 			c.Headers[key] = value
 		}
 	}
+}
+
+// randomUserAgent returns a random user agent string to identify our client
+func randomUserAgent() string {
+	agents := []string{
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+		"Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
+	}
+
+	var seedOnce sync.Once
+	seedOnce.Do(func() {
+		rand.Seed(time.Now().UnixNano())
+	})
+
+	return agents[rand.Intn(len(agents))]
 }
 
 // Get makes an API call to the yahoo v8 API returning ticker data
