@@ -3,25 +3,27 @@ package yfinance
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
 
-type Client struct {
-	baseURL string
-	client  *http.Client
-	headers map[string]string
+type client struct {
+	BaseURL    string
+	HTTPClient *http.Client
+	Headers    map[string]string
 }
 
-type ClientOpt func(*Client)
+type ClientOpt func(*client)
 
-// NewClient constructs a Client with default fields but allows customization
+// NewClient constructs a client with default fields but allows customization
 // through functional options
-func NewClient(opts ...ClientOpt) *Client {
-	client := &Client{ // default Client implementation
-		baseURL: `https://query1.finance.yahoo.com`,
-		client:  &http.Client{Timeout: 30 * time.Second},
-		headers: make(map[string]string),
+func NewClient(opts ...ClientOpt) *client {
+	client := &client{ // default Client implementation
+		BaseURL:    `https://query1.finance.yahoo.com`,
+		HTTPClient: &http.Client{Timeout: 30 * time.Second},
+		Headers:    make(map[string]string),
 	}
 
 	for _, opt := range opts { //override defaults
@@ -31,38 +33,42 @@ func NewClient(opts ...ClientOpt) *Client {
 	return client
 }
 
-// WithBaseURL allows you to customize baseURL for the client
+// WithBaseURL allows you to customize BaseURL for the client
 func WithBaseURL(baseURL string) ClientOpt {
-	return func(c *Client) {
-		c.baseURL = baseURL
+	return func(c *client) {
+		c.BaseURL = baseURL
 	}
 }
 
 // WithClient allows you to customize the http client
-func WithClient(client *http.Client) ClientOpt {
-	return func(c *Client) {
-		c.client = client
+func WithHTTPClient(httpclient *http.Client) ClientOpt {
+	return func(c *client) {
+		c.HTTPClient = httpclient
 	}
 }
 
-// WithHeader allows you to customize multiple headers at once. Last value wins.
+// WithHeaders allows you to customize multiple headers at once. Last value wins.
 func WithHeaders(headers map[string]string) ClientOpt {
-	return func(c *Client) {
+	return func(c *client) {
 		for key, value := range headers {
-			c.headers[key] = value
+			c.Headers[key] = value
 		}
 	}
 }
 
 // Get makes an API call to the yahoo v8 API returning ticker data
-func (c *Client) Get(ticker string) (*Chart, error) {
-	endpoint := c.baseURL + `/v8/finance/chart/` + ticker
+func (c *client) Get(ticker string) (*Chart, error) {
+	endpoint := c.BaseURL + `/v8/finance/chart/` + ticker
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create request: %w", err)
 	}
 
-	resp, err := c.client.Do(req)
+	for k, v := range c.Headers {
+		req.Header.Set(k, v)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Request to %s failed: %w", endpoint, err)
 	}
