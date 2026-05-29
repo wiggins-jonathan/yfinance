@@ -1,7 +1,6 @@
 package yfinance
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -39,7 +38,7 @@ func TestYahooAPIRealCall(t *testing.T) {
 	}
 
 	// informational
-	fmt.Printf("Ticker: %s\n", result.Meta.Symbol)
-	fmt.Printf("Market Price: %.2f\n", chart.Price())
-	fmt.Printf("Trading Period: %+v\n", result.Meta.CurrentTradingPeriod)
+	t.Logf("Ticker: %s\n", result.Meta.Symbol)
+	t.Logf("Market Price: %.2f\n", chart.Price())
+	t.Logf("Trading Period: %+v\n", result.Meta.CurrentTradingPeriod)
 }
